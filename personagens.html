@@ -1,0 +1,52 @@
+<link rel="stylesheet" href="style.css">
+<h1>Personagens</h1>
+<button onclick="history.back()">← Voltar</button>
+
+<div class="container">
+<button onclick="novo()">Novo</button>
+<div id="lista"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="firebase.js"></script>
+
+<script>
+let jogador=localStorage.getItem("jogador");
+
+db.collection("personagens").where("jogadorId","==",jogador)
+.onSnapshot(s=>{
+    let html="";
+    s.forEach(doc=>{
+        let p=doc.data();
+        html+=`
+        <div class="card">
+            ${p.nome}
+            <button onclick="edit('${doc.id}')">Editar</button>
+            <button onclick="del('${doc.id}')">Deletar</button>
+        </div>`;
+    });
+    lista.innerHTML=html;
+});
+
+function novo(){
+db.collection("personagens").add({
+jogadorId:jogador,
+nome:"Novo",
+forca:0,destreza:0,constituicao:0,
+inteligencia:0,sabedoria:0,carisma:0,
+pericias:{forca:0,destreza:0,constituicao:0,inteligencia:0,sabedoria:0,carisma:0},
+inventario:[""],equipado:[""],restricoes:["","",""],
+vida:0,saa:10,reisaa:5
+});
+}
+
+function edit(id){
+localStorage.setItem("personagem",id);
+location.href="editar.html";
+}
+
+function del(id){
+db.collection("personagens").doc(id).delete();
+}
+</script>

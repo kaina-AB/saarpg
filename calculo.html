@@ -1,0 +1,222 @@
+<link rel="stylesheet" href="style.css">
+<h1>Cálculo</h1>
+<button onclick="history.back()">← Voltar</button>
+
+<div class="container">
+
+<div class="box">
+
+<select id="personagem"></select>
+
+<input id="saa" placeholder="SAA (0 ou mais)">
+
+<select id="tipo">
+
+<option value="forca">Força</option>
+<option value="destreza">Destreza</option>
+<option value="constituicao">Constituição</option>
+<option value="inteligencia">Inteligência</option>
+<option value="sabedoria">Sabedoria</option>
+<option value="carisma">Carisma</option>
+
+<option value="resp">Respiração</option>
+<option value="comb">Combate</option>
+<option value="fluxo">Fluxo</option>
+<option value="arma">Arma</option>
+
+<option value="f_r">Fluxo + Respiração</option>
+<option value="f_c">Fluxo + Combate</option>
+<option value="f_a">Fluxo + Arma</option>
+<option value="r_c">Respiração + Combate</option>
+<option value="r_a">Respiração + Arma</option>
+<option value="c_a">Combate + Arma</option>
+
+<option value="f_r_c">Fluxo + Resp + Combate</option>
+<option value="f_r_a">Fluxo + Resp + Arma</option>
+<option value="f_c_a">Fluxo + Combate + Arma</option>
+<option value="r_c_a">Resp + Combate + Arma</option>
+
+<option value="tudo">Tudo</option>
+
+</select>
+
+<div style="display:flex;align-items:center;gap:10px;margin:8px 0;">
+    <input type="checkbox" id="usarPericia" style="width:auto;">
+    <span>Usar perícia</span>
+</div>
+
+<div style="display:flex;align-items:center;gap:10px;margin:8px 0;">
+    <input type="checkbox" id="reisaa" style="width:auto;">
+    <span>Usar REISAA</span>
+</div>
+
+<div id="dado" class="dado">🎲</div>
+
+<button onclick="rolar()">Rolar</button>
+
+<h3 id="res"></h3>
+
+</div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="firebase.js"></script>
+
+<script>
+let map = {};
+
+db.collection("personagens").onSnapshot(s=>{
+    personagem.innerHTML="";
+    s.forEach(doc=>{
+        let p = doc.data();
+        map[doc.id] = p;
+
+        let opt = document.createElement("option");
+        opt.value = doc.id;
+        opt.textContent = p.nome;
+        personagem.appendChild(opt);
+    });
+});
+
+function animar(){
+    let d = document.getElementById("dado");
+    d.classList.add("rolling");
+    setTimeout(()=>d.classList.remove("rolling"), 800);
+}
+
+function rollDetalhado(n){
+    let resultados = [];
+    let total = 0;
+
+    for(let i=0;i<n;i++){
+        let v = Math.floor(Math.random()*20)+1;
+        resultados.push(v);
+        total += v;
+    }
+
+    return { total, resultados };
+}
+
+function attr(p, nome, usarPericia){
+    let v = p[nome] || 0;
+    if(usarPericia && p.pericias){
+        v += p.pericias[nome] || 0;
+    }
+    return v;
+}
+
+function baseCalculo(p, tipo, useReisaa, usarPericia){
+
+    let atributos = new Set();
+
+    function add(nome){
+        atributos.add(nome);
+    }
+
+    // ===== atributos simples =====
+    if(tipo === "forca") add("forca");
+    if(tipo === "destreza") add("destreza");
+    if(tipo === "constituicao") add("constituicao");
+    if(tipo === "inteligencia") add("inteligencia");
+    if(tipo === "sabedoria") add("sabedoria");
+    if(tipo === "carisma") add("carisma");
+
+    // ===== especiais =====
+
+    const RESP = ["resp","f_r","r_c","r_a","f_r_c","f_r_a","r_c_a"];
+    const COMB = ["comb","f_c","r_c","c_a","f_r_c","f_c_a","r_c_a"];
+    const FLUXO = ["fluxo","f_r","f_c","f_a","f_r_c","f_r_a","f_c_a"];
+    const ARMA = ["arma","f_a","r_a","c_a","f_r_a","f_c_a","r_c_a"];
+
+    if(RESP.includes(tipo)){
+        add("destreza");
+        add("constituicao");
+    }
+
+    if(COMB.includes(tipo)){
+        add("forca");
+        add("destreza");
+    }
+
+    if(FLUXO.includes(tipo)){
+        add("forca");
+        add(useReisaa ? "inteligencia" : "sabedoria");
+    }
+
+    if(ARMA.includes(tipo)){
+        add("forca");
+        add("sabedoria");
+    }
+
+    // ===== tudo =====
+    if(tipo === "tudo"){
+        add("forca");
+        add("destreza");
+        add("constituicao");
+        add(useReisaa ? "inteligencia" : "sabedoria");
+    }
+
+    // ===== soma =====
+    let total = 0;
+
+    atributos.forEach(attrName=>{
+        let v = p[attrName] || 0;
+
+        if(
+            usarPericia &&
+            ["forca","destreza","constituicao","inteligencia","sabedoria","carisma"].includes(tipo)
+        ){
+            v += (p.pericias?.[attrName] || 0);
+        }
+
+        total += v;
+    });
+
+    return total;
+}
+async function rolar(){
+
+    let id = personagem.value;
+    let p = map[id];
+
+    let n = parseInt(saa.value);
+    if(isNaN(n) || n < 0) n = 0;
+
+    let quantidadeDados = n + 1;
+
+    let usarPericia = document.getElementById("usarPericia").checked;
+    let useReisaa = document.getElementById("reisaa").checked;
+
+    let energia = useReisaa ? "reisaa" : "saa";
+
+    if(n > 0 && n > p[energia]){
+        alert("sem recurso");
+        return;
+    }
+
+    animar();
+
+    let base = baseCalculo(p, tipo.value, useReisaa, usarPericia);
+
+    setTimeout(async ()=>{
+
+        let r = rollDetalhado(quantidadeDados);
+        let total = r.total + base;
+
+        if(n > 0){
+            await db.collection("personagens").doc(id)
+            .update({[energia]: p[energia] - n});
+        }
+
+        res.innerHTML = `
+        Resultado: ${total} <br>
+        Dados (${quantidadeDados}D20): [${r.resultados.join(", ")}] <br>
+        Soma dos dados: ${r.total} <br>
+        Base: ${base}
+        `;
+
+    },800);
+}
+</script>

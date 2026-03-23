@@ -1,0 +1,151 @@
+<link rel="stylesheet" href="style.css">
+
+<h1>Editar</h1>
+
+<div class="container">
+<div class="box">
+
+Nome <input id="nome">
+Origem <input id="origem">
+Idade <input id="idade">
+Altura <input id="altura">
+
+Força <input id="forca">
+Perícia <input id="pforca">
+
+Destreza <input id="destreza">
+Perícia <input id="pdestreza">
+
+Constituição <input id="constituicao">
+Perícia <input id="pconstituicao">
+
+Inteligência <input id="inteligencia">
+Perícia <input id="pinteligencia">
+
+Sabedoria <input id="sabedoria">
+Perícia <input id="psabedoria">
+
+Carisma <input id="carisma">
+Perícia <input id="pcarisma">
+
+Vida <input id="vida">
+SAA <input id="saa">
+REISAA <input id="reisaa">
+
+<h3>Inventário</h3>
+<div id="inv"></div>
+<button onclick="addInv()">+</button>
+
+<h3>Equipado</h3>
+<div id="eq"></div>
+<button onclick="addEq()">+</button>
+
+<h3>Restrições</h3>
+<textarea id="r1"></textarea>
+<textarea id="r2"></textarea>
+<textarea id="r3"></textarea>
+
+<button onclick="salvar()">Salvar</button>
+
+</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="firebase.js"></script>
+
+<script>
+let id = localStorage.getItem("personagem");
+let ref = db.collection("personagens").doc(id);
+
+let p;
+
+ref.get().then(d=>{
+    p=d.data();
+
+    nome.value=p.nome;
+    origem.value=p.origem;
+    idade.value=p.idade;
+    altura.value=p.altura;
+
+    forca.value=p.forca;
+    pforca.value=p.pericias.forca;
+
+    destreza.value=p.destreza;
+    pdestreza.value=p.pericias.destreza;
+
+    constituicao.value=p.constituicao;
+    pconstituicao.value=p.pericias.constituicao;
+
+    inteligencia.value=p.inteligencia;
+    pinteligencia.value=p.pericias.inteligencia;
+
+    sabedoria.value=p.sabedoria;
+    psabedoria.value=p.pericias.sabedoria;
+
+    carisma.value=p.carisma;
+    pcarisma.value=p.pericias.carisma;
+
+    vida.value=p.vida;
+    saa.value=p.saa;
+    reisaa.value=p.reisaa;
+
+    renderList("inv", p.inventario);
+    renderList("eq", p.equipado);
+
+    r1.value=p.restricoes[0];
+    r2.value=p.restricoes[1];
+    r3.value=p.restricoes[2];
+});
+
+function renderList(id, arr){
+    let html="";
+    arr.forEach((v,i)=>{
+        html+=`<input value="${v}" oninput="updateList('${id}',${i},this.value)">`;
+    });
+    document.getElementById(id).innerHTML=html;
+}
+
+function updateList(type,i,val){
+    if(type=="inv") p.inventario[i]=val;
+    else p.equipado[i]=val;
+}
+
+function addInv(){ p.inventario.push(""); renderList("inv",p.inventario);}
+function addEq(){ p.equipado.push(""); renderList("eq",p.equipado);}
+
+function salvar(){
+    ref.update({
+        nome:nome.value,
+        origem:origem.value,
+        idade:idade.value,
+        altura:altura.value,
+
+        forca:+forca.value,
+        destreza:+destreza.value,
+        constituicao:+constituicao.value,
+        inteligencia:+inteligencia.value,
+        sabedoria:+sabedoria.value,
+        carisma:+carisma.value,
+
+        pericias:{
+            forca:+pforca.value,
+            destreza:+pdestreza.value,
+            constituicao:+pconstituicao.value,
+            inteligencia:+pinteligencia.value,
+            sabedoria:+psabedoria.value,
+            carisma:+pcarisma.value
+        },
+
+        vida:+vida.value,
+        saa:+saa.value,
+        reisaa:+reisaa.value,
+
+        inventario:p.inventario,
+        equipado:p.equipado,
+        restricoes:[r1.value,r2.value,r3.value]
+    });
+
+    alert("salvo");
+}
+</script>

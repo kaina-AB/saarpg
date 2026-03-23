@@ -1,0 +1,47 @@
+<link rel="stylesheet" href="style.css">
+<h1>Jogadores</h1>
+<button onclick="history.back()">← Voltar</button>
+
+<div class="container">
+<div class="box">
+<input id="nomeJogador" placeholder="Nome">
+<button onclick="criarJogador()">Criar</button>
+</div>
+
+<div id="lista"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="firebase.js"></script>
+
+<script>
+db.collection("jogadores").onSnapshot(s=>{
+    let html="";
+    s.forEach(doc=>{
+        let j=doc.data();
+        html+=`
+        <div class="card">
+            ${j.nome}
+            <button onclick="abrir('${doc.id}')">Entrar</button>
+            <button onclick="del('${doc.id}')">Deletar</button>
+        </div>`;
+    });
+    lista.innerHTML=html;
+});
+
+function criarJogador(){
+    db.collection("jogadores").add({nome:nomeJogador.value});
+}
+
+function abrir(id){
+    localStorage.setItem("jogador",id);
+    location.href="personagens.html";
+}
+
+function del(id){
+    if(confirm("deletar?")){
+        db.collection("jogadores").doc(id).delete();
+    }
+}
+</script>
