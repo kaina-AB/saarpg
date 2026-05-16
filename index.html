@@ -1,10 +1,204 @@
-<link rel="stylesheet" href="style.css">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAA RPG - Plataforma</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-<h1>SAA RPG</h1>
+    <nav class="sidebar">
+        <div class="logo">
+            <h2>SAA RPG</h2>
+        </div>
+        <ul class="nav-links">
+            <li><button onclick="navigate('mesa')" class="active" id="btn-mesa">🎲 Mesa & Rolagens</button></li>
+            <li><button onclick="navigate('personagens')" id="btn-personagens">🛡️ Personagens</button></li>
+            <li><button onclick="navigate('jogadores')" id="btn-jogadores">👥 Jogadores</button></li>
+            <hr>
+            <li><button onclick="navigate('lore-conhecida')" id="btn-lore-conhecida">📜 A História</button></li>
+            <li><button onclick="navigate('lore-verdade')" id="btn-lore-verdade" class="truth-btn">👁️ A Verdade</button></li>
+        </ul>
+    </nav>
 
-<div class="container">
-<div class="box">
-<button onclick="location.href='jogadores.html'">Jogadores</button>
-<button onclick="location.href='calculo.html'">Cálculo</button>
-</div>
-</div>
+    <main class="content">
+
+        <section id="mesa" class="page active">
+            <header>
+                <h1>Cálculo e Rolagens</h1>
+                <p>Selecione o personagem e o tipo de teste para rolar os dados.</p>
+            </header>
+            <div class="panel grid-2">
+                <div class="control-group">
+                    <label>Personagem</label>
+                    <select id="personagemSelectMesa"></select>
+                    
+                    <label>Gasto de SAA (0 ou mais)</label>
+                    <input type="number" id="saaGasto" value="0" min="0">
+                    
+                    <label>Tipo de Teste</label>
+                    <select id="tipoTeste">
+                        <option value="forca">Força</option>
+                        <option value="destreza">Destreza</option>
+                        <option value="constituicao">Constituição</option>
+                        <option value="inteligencia">Inteligência</option>
+                        <option value="sabedoria">Sabedoria</option>
+                        <option value="carisma">Carisma</option>
+                        <option value="resp">Respiração</option>
+                        <option value="comb">Combate</option>
+                        <option value="fluxo">Fluxo</option>
+                        <option value="arma">Arma</option>
+                        <option value="f_r">Fluxo + Respiração</option>
+                        <option value="f_c">Fluxo + Combate</option>
+                        <option value="f_a">Fluxo + Arma</option>
+                        <option value="r_c">Respiração + Combate</option>
+                        <option value="r_a">Respiração + Arma</option>
+                        <option value="c_a">Combate + Arma</option>
+                        <option value="f_r_c">Fluxo + Resp + Combate</option>
+                        <option value="f_r_a">Fluxo + Resp + Arma</option>
+                        <option value="f_c_a">Fluxo + Combate + Arma</option>
+                        <option value="r_c_a">Resp + Combate + Arma</option>
+                        <option value="tudo">Tudo</option>
+                    </select>
+
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="usarPericia"> Usar Perícia</label>
+                        <label><input type="checkbox" id="usarReisaa"> Usar REISAA</label>
+                    </div>
+
+                    <button class="btn-primary" onclick="rolarDado()">Rolar Dados</button>
+                </div>
+
+                <div class="dice-result-panel">
+                    <div id="dadoAnim" class="dado">🎲</div>
+                    <div id="resultadoRolagem" class="resultado-box">
+                        Aguardando rolagem...
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="personagens" class="page">
+            <header>
+                <h1>Personagens</h1>
+                <div class="header-actions">
+                    <select id="filtroJogadorPersonagem">
+                        <option value="todos">Todos os Jogadores</option>
+                    </select>
+                    <button class="btn-success" onclick="criarPersonagem()">+ Novo Personagem</button>
+                </div>
+            </header>
+            <div id="listaPersonagens" class="grid-cards"></div>
+
+            <div id="editorPersonagem" class="panel hidden mt-20">
+                <div class="flex-header">
+                    <h2>Editando Personagem</h2>
+                    <button class="btn-danger" onclick="fecharEditor()">X</button>
+                </div>
+                <input type="hidden" id="editId">
+                <div class="grid-3 mt-20">
+                    <div><label>Nome</label><input id="editNome"></div>
+                    <div><label>Origem</label><input id="editOrigem"></div>
+                    <div><label>Idade / Altura</label>
+                        <div style="display:flex;gap:10px;">
+                            <input id="editIdade" placeholder="Idade">
+                            <input id="editAltura" placeholder="Altura">
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 class="mt-20">Atributos e Perícias</h3>
+                <div class="grid-3">
+                    <div class="attr-box"><label>Força</label><input type="number" id="editFor"><label class="micro">Perícia</label><input type="number" id="editPFor"></div>
+                    <div class="attr-box"><label>Destreza</label><input type="number" id="editDes"><label class="micro">Perícia</label><input type="number" id="editPDes"></div>
+                    <div class="attr-box"><label>Constituição</label><input type="number" id="editCon"><label class="micro">Perícia</label><input type="number" id="editPCon"></div>
+                    <div class="attr-box"><label>Inteligência</label><input type="number" id="editInt"><label class="micro">Perícia</label><input type="number" id="editPInt"></div>
+                    <div class="attr-box"><label>Sabedoria</label><input type="number" id="editSab"><label class="micro">Perícia</label><input type="number" id="editPSab"></div>
+                    <div class="attr-box"><label>Carisma</label><input type="number" id="editCar"><label class="micro">Perícia</label><input type="number" id="editPCar"></div>
+                </div>
+
+                <h3 class="mt-20">Status</h3>
+                <div class="grid-3">
+                    <div><label>Vida</label><input type="number" id="editVida"></div>
+                    <div><label>SAA</label><input type="number" id="editSaa"></div>
+                    <div><label>REISAA</label><input type="number" id="editReisaa"></div>
+                </div>
+
+                <button class="btn-success mt-20 full-width" onclick="salvarPersonagem()">Salvar Alterações</button>
+            </div>
+        </section>
+
+        <section id="jogadores" class="page">
+            <header>
+                <h1>Jogadores</h1>
+            </header>
+            <div class="panel">
+                <div class="control-group row">
+                    <input id="nomeJogador" placeholder="Nome do Novo Jogador">
+                    <button class="btn-primary" onclick="criarJogador()">Adicionar</button>
+                </div>
+            </div>
+            <div id="listaJogadores" class="grid-cards mt-20"></div>
+        </section>
+
+        <section id="lore-conhecida" class="page text-reader">
+            <header>
+                <h1>A História Conhecida</h1>
+                <p>Os registros oficiais do Império e das Tribos.</p>
+            </header>
+            <article class="panel reading-panel">
+                <h2>Termos de Uso do Saa</h2>
+                <p>Saa é o princípio fundamental de tudo o que existe, o fluxo natural de energia vital que tudo percorre. Pode ser usado para aumentar atributos físicos temporariamente. Somente aqueles que descendem da linhagem de alguma tribo conseguem usar Saa, pois todos descendem de um ancestral comum.</p>
+                
+                <h2>As 5 Tribos</h2>
+                <ul>
+                    <li><strong>Honuanui (Polo Norte):</strong> Sábios e poderosos, manipulam as leis do universo.</li>
+                    <li><strong>Samudra (Mar):</strong> Conexão com a vida do oceano.</li>
+                    <li><strong>Abaa (Montanhas):</strong> Sábios e honrados, manipulam o ambiente à sua volta.</li>
+                    <li><strong>Kali (Floresta):</strong> Conexão com a natureza, pactos com animais.</li>
+                    <li><strong>Karaash (Deserto):</strong> A tribo mais tradicional e populosa, impiedosa e ritualística.</li>
+                </ul>
+
+                <h2>O Império e a 1ª Guerra</h2>
+                <p>Desertores sem Saa fundaram o Império, focados em evolução intelectual e tecnológica. Para combater os feiticeiros, as tribos se uniram, lideradas por Honuanui. Porém, foram dizimados por <strong>Rumuna</strong>, a única usuária de Saa do Império, e membro do Círculo Imperial. A tribo de Honuanui foi exterminada, e o Império dominou o mundo.</p>
+
+                <h2>Os 5 Devas e as Armas Saaístas</h2>
+                <p>Hopanishade, Sadrumbada, Abaadu, Kalipura e Karaaglya. Seres divinos que ensinaram a humanidade a usar o Saa para cura e prosperidade. O uso do Saa para a guerra decepcionou os Devas. Os fundadores das tribos possuíam Armas Saaístas feitas pelos próprios Devas (O Obelisco, A Vértebra, O Leviatã, O Tremor, O Dente-de-Sabre).</p>
+
+                <h2>ReiSaa e os ReiDevas</h2>
+                <p>O ReiSaa é um Saa corrompido, venenoso, altamente destrutivo e que sobrepõe o Saa comum. Seu uso constante transforma o usuário em um <strong>Gigante</strong> irracional. Os ReiDevas (Dharmasatyam, Taoshun, Zurthur, Surnukeha, Galskapur) são o oposto dos Devas, divindades de destruição que odeiam a humanidade.</p>
+            </article>
+        </section>
+
+        <section id="lore-verdade" class="page text-reader">
+            <header>
+                <h1 class="truth-text">A Verdade Oculta</h1>
+                <p>O que realmente aconteceu antes da formação do mundo atual.</p>
+            </header>
+            <article class="panel reading-panel border-red">
+                <h2>O Princípio e as Forças Primordiais</h2>
+                <p>No princípio, o vazio se movimentou criando Daivi (chama branca, criação/cura) e Asuri (chama negra, destruição/fim). O choque criou o <strong>Saa</strong> (o grande rugido: Om). Três deuses surgiram: Indra (Deus dos Devas), Su-Hul (Deus dos Asuras) e <strong>Celeste</strong> (Deusa dos espíritos).</p>
+
+                <h2>O Paraíso e o Casulo</h2>
+                <p>Celeste criou o Paraíso para curar almas sofredoras, dividindo seu espírito em 10 partes (An-Ki). Entregou 9 aos Devas e ficou com 1, entrando em um casulo para nascer como humana. <strong>Hopanishade</strong>, indignado por não receber um An-Ki, traiu os outros. Ele derrotou Taoshun, baniu-o para o Vazio, roubou o An-Ki de Celeste e tornou-se quase invencível.</p>
+
+                <h2>A Traição e a Maldição Rei</h2>
+                <p>Hopanishade amaldiçoou 4 Devas que se rebelaram contra ele, transformando-os nos ReiDevas, e amaldiçoou a humanidade: o Saa das almas seria drenado por ele, e os desobedientes virariam Gigantes.</p>
+
+                <h2>O Sacrifício de Celeste</h2>
+                <p>Nascida no paraíso, Celeste viajou ao submundo guiada pelos Asuras. Invocou Taoshun, que com seu último poder, alterou a maldição: as vítimas após a morte seriam libertas, e teriam acesso ao <strong>ReiSaa</strong> (indetectável por Hopanishade). Celeste voltou à superfície para enfrentar Hopanishade, mas foi morta por ele.</p>
+
+                <h2>A Rebelião de Rumuna</h2>
+                <p>Rumuna não era a vilã descrita pelo Império. Ao ver a passividade do submundo, ela matou seu pai (Dharmasatyam) a pedido dele para obter seu An-Ki. Banida, foi à superfície, formou o Império e iniciou a guerra não por poder, mas <strong>para matar o máximo de pessoas possíveis no paraíso e libertar seus espíritos da drenagem de Hopanishade</strong>. Ela fez os fundadores pecarem para mostrar suas falhas, e revelou a verdade a Honuanui, que se suicidou para selar a conexão de Hopanishade.</p>
+            </article>
+        </section>
+
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
